@@ -461,10 +461,7 @@ private[hive] case class MetastoreRelation
   )
 
   val tableDesc = HiveShim.getTableDesc(
-    Class.forName(
-      hiveQlTable.getSerializationLib,
-      true,
-      Utils.getContextOrSparkClassLoader).asInstanceOf[Class[Deserializer]],
+    null,
     hiveQlTable.getInputFormatClass,
     // The class of table should be org.apache.hadoop.hive.ql.metadata.Table because
     // getOutputFormatClass will use HiveFileFormatUtils.getOutputFormatSubstitute to

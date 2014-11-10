@@ -52,6 +52,8 @@ private[hive] case class DropTable(tableName: String, ifExists: Boolean) extends
 
 private[hive] case class AnalyzeTable(tableName: String) extends Command
 
+private[hive] case class CreateView(viewName: String, sqlQuery: String) extends Command
+
 /** Provides a mapping from HiveQL statements to catalyst logical plans and expression trees. */
 private[hive] object HiveQl {
   protected val nativeCommands = Seq(

@@ -78,7 +78,8 @@ private[hive] trait HiveStrategies {
 
     def apply(plan: LogicalPlan): Seq[SparkPlan] = plan match {
       case PhysicalOperation(projectList, predicates, relation: MetastoreRelation)
-          if relation.tableDesc.getSerdeClassName.contains("Parquet") &&
+          if relation.tableDesc.getSerdeClassName != null &&
+          relation.tableDesc.getSerdeClassName.contains("Parquet") &&
              hiveContext.convertMetastoreParquet =>
 
         // Filter out all predicates that only deal with partition keys
@@ -213,6 +214,9 @@ private[hive] trait HiveStrategies {
       case hive.AddFile(path) => execution.AddFile(path) :: Nil
 
       case hive.AnalyzeTable(tableName) => execution.AnalyzeTable(tableName) :: Nil
+      
+      case hive.CreateView(viewName: String, sqlQuery: String) =>
+        execution.CreateView(viewName, sqlQuery) :: Nil
 
       case describe: logical.DescribeCommand =>
         val resolvedTable = context.executePlan(describe.table).analyzed

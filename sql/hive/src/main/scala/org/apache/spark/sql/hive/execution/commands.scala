@@ -22,6 +22,7 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.catalyst.expressions.Row
 import org.apache.spark.sql.execution.{Command, LeafNode}
 import org.apache.spark.sql.hive.HiveContext
+import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 
 /**
  * :: DeveloperApi ::
@@ -89,6 +90,23 @@ case class AddFile(path: String) extends LeafNode with Command {
   override protected lazy val sideEffectResult: Seq[Row] = {
     hiveContext.runSqlHive(s"ADD FILE $path")
     hiveContext.sparkContext.addFile(path)
+    Seq.empty[Row]
+  }
+}
+
+/**
+ * :: DeveloperApi ::
+ */
+@DeveloperApi
+case class CreateView(viewName: String, sqlQuery: String) extends LeafNode with Command {
+  def hiveContext = sqlContext.asInstanceOf[HiveContext]
+
+  override def output = Seq.empty
+
+  override protected lazy val sideEffectResult: Seq[Row] = {
+    import sqlContext._
+    hiveContext.runSqlHive(s"CREATE VIEW $viewName AS $sqlQuery")
+    hiveContext.parseSql(sqlQuery).registerTempTable(viewName)
     Seq.empty[Row]
   }
 }

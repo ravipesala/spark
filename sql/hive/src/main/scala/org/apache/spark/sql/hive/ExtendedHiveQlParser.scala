@@ -33,6 +33,9 @@ private[hive] class ExtendedHiveQlParser extends AbstractSparkSQLParser {
   protected val DFS  = Keyword("DFS")
   protected val FILE = Keyword("FILE")
   protected val JAR  = Keyword("JAR")
+  protected val CREATE  = Keyword("CREATE")
+  protected val VIEW  = Keyword("VIEW")
+  protected val AS  = Keyword("AS")
 
   private val reservedWords =
     this
@@ -43,7 +46,7 @@ private[hive] class ExtendedHiveQlParser extends AbstractSparkSQLParser {
 
   override val lexical = new SqlLexical(reservedWords)
 
-  protected lazy val start: Parser[LogicalPlan] = dfs | addJar | addFile | hiveQl
+  protected lazy val start: Parser[LogicalPlan] = dfs | addJar | addFile | createView | hiveQl
 
   protected lazy val hiveQl: Parser[LogicalPlan] =
     restInput ^^ {
@@ -63,5 +66,10 @@ private[hive] class ExtendedHiveQlParser extends AbstractSparkSQLParser {
   private lazy val addJar: Parser[LogicalPlan] =
     ADD ~ JAR ~> restInput ^^ {
       case input => AddJar(input.trim)
+    }
+
+  private lazy val createView: Parser[LogicalPlan] =
+    CREATE ~> (VIEW ~> ident) ~ (AS ~> restInput) ^^ {
+      case viewName ~ query => CreateView(viewName, query)
     }
 }
